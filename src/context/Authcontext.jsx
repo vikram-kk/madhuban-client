@@ -9,12 +9,16 @@ export const AuthProvider = ({ children }) => {
     getUser();
   }, []);
 
+  const [loading, setLoading] = useState(true);
+
   const getUser = async () => {
     try {
       const res = await API.get("/auth/me");
       setUser(res.data);
     } catch {
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
   const logout = () => {
@@ -22,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
   return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
+    <AuthContext.Provider value={{ user, setUser, logout, getUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

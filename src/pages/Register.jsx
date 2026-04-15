@@ -4,6 +4,7 @@ import API from "../services/api";
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { getUser } = useContext(AuthContext);
 
   const inputs = [
     {

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { AuthContext } from "../context/Authcontext";
 
 export default function Login() {
   const navigate = useNavigate();
-
+  const { getUser } = useContext(AuthContext);
   const inputs = [
     {
       label: "E-mail",
@@ -36,6 +37,8 @@ export default function Login() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
 
     try {
       setLoading(true);
