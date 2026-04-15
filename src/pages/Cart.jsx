@@ -13,7 +13,7 @@ export default function Cart() {
         setLoading(true);
 
         const res = await API.get("/cart");
-        console.log(res.data.cart.items);
+        console.log(res.data);
         const items = res.data.cart.items || [];
 
         if (items.length === 0) {
@@ -39,6 +39,23 @@ export default function Cart() {
     getCart();
   }, []);
 
+  const HandleRemove = async (id) => {
+    console.log(id);
+    try {
+      await API.delete("/cart/remove", { data: { productId: id } });
+      const updatedCart = cart.filter((item) => item.product._id !== id);
+      setCart(updatedCart);
+
+      if (updatedCart.length === 0) setErr("Your cart is empty. 🛒");
+      console.log(res.data);
+    } catch (error) {
+      return setErr(
+        error.response?.data?.message ||
+          `error while removing the item from the cart`,
+      );
+    }
+  };
+
   if (loading) return <h1>Loading...</h1>;
 
   if (err) return <h2>{err}</h2>;
@@ -50,8 +67,14 @@ export default function Cart() {
           <h1>{item.product.name}</h1>
           <p>{item.product.description}</p>
           <h2>₹{item.product.price}</h2>
-          Qty:<button>-</button> {item.quantity} <p> {item.quantity}</p>
-          <button>+</button>
+          <p>Qty: {item.quantity}</p>
+          <button
+            onClick={() => {
+              HandleRemove(item.product._id);
+            }}
+          >
+            Remove
+          </button>
         </div>
       ))}
 
