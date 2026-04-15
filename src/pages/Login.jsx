@@ -42,7 +42,7 @@ export default function Login() {
       const res = await API.post("/auth/login", form);
 
       localStorage.setItem("token", res.data.token);
-
+      await getUser();
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");

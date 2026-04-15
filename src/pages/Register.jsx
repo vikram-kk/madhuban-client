@@ -72,6 +72,7 @@ export default function SignUp() {
       const res = await API.post("/auth/register", form);
 
       localStorage.setItem("token", res.data.token);
+      await getUser();
       setForm(initialState);
 
       navigate("/");
