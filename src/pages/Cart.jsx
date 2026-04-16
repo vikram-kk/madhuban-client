@@ -1,36 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import API from "../services/api";
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
+
+  const total = useMemo(() => {
+    return cart.reduce(
+      (acc, item) => acc + item.product.price * item.quantity,
+      0,
+    );
+  }, [cart]);
 
   useEffect(() => {
     getCart();
   }, []);
+
   const getCart = async () => {
     try {
       setLoading(true);
-
       const res = await API.get("/cart");
-      console.log(res.data);
-      const items = res.data.cart.items || [];
-
-      if (items.length === 0) {
-        setErr("Your cart is empty. Continue shopping 🛒");
-        return;
-      }
-
-      setCart(items);
-
-      const totalPrice = items.reduce(
-        (acc, item) => acc + item.product.price * item.quantity,
-        0,
-      );
-
-      setTotal(totalPrice);
+      setCart(res.data.cart.items || []);
     } catch (error) {
       setErr(error.response?.data?.message || "Error fetching cart");
     } finally {
@@ -38,76 +29,91 @@ export default function Cart() {
     }
   };
 
-  const HandleRemove = async (id) => {
-    console.log(id);
+  const handleRemove = async (id) => {
     try {
-      const res = await API.delete("/cart/remove", { data: { productId: id } });
-      const updatedCart = cart.filter((item) => item.product._id !== id);
-      setCart(updatedCart);
+      const previousCart = [...cart];
+      setCart(cart.filter((item) => item.product._id !== id));
 
-      if (updatedCart.length === 0) setErr("Your cart is empty. 🛒");
-      console.log(res.data);
+      await API.delete("/cart/remove", { data: { productId: id } });
     } catch (error) {
-      setErr(
-        error.response?.data?.message ||
-          `error while removing the item from the cart`,
-      );
+      setErr("Could not remove item. Please try again.");
+      getCart();
     }
   };
 
   const handleQuantity = async (id, opp, currQty) => {
-    let qty = currQty;
-    if (opp === "add") {
-      qty = qty + 1;
-    } else if (opp === "sub") {
-      qty = qty - 1;
+    let newQty = opp === "add" ? currQty + 1 : currQty - 1;
+    if (newQty < 1) return;
+
+    const updatedCart = cart.map((item) =>
+      item.product._id === id ? { ...item, quantity: newQty } : item,
+    );
+    setCart(updatedCart);
+
+    try {
+      await API.patch("/cart/update", {
+        productId: id,
+        quantity: newQty,
+      });
+    } catch (err) {
+      console.error("Update failed", err);
+      getCart();
     }
-    console.log(qty);
-    const res = await API.patch("/cart/update", {
-      productId: id,
-      quantity: qty,
-    });
-    getCart();
-    // setCart(res.data.cart);
   };
 
   if (loading) return <h1>Loading...</h1>;
-
   if (err) return <h2>{err}</h2>;
 
   return (
     <div>
-      {cart.map((item) => (
-        <div key={item.product._id}>
-          <h1>{item.product.name}</h1>
-          <p>{item.product.description}</p>
-          <h2>₹{item.product.price}</h2>
-          <button
-            onClick={() => {
-              handleQuantity(item.product._id, "sub", item.quantity);
-            }}
-          >
-            -
-          </button>
-          <p>Qty: {item.quantity}</p>
-          <button
-            onClick={() => {
-              handleQuantity(item.product._id, "add", item.quantity);
-            }}
-          >
-            +
-          </button>
-          <button
-            onClick={() => {
-              HandleRemove(item.product._id);
-            }}
-          >
-            Remove
-          </button>
-        </div>
-      ))}
+      {cart.length === 0 ? (
+        <h2>Your cart is empty. Continue shopping 🛒</h2>
+      ) : (
+        <>
+          {cart.map((item) => (
+            <div
+              key={item.product._id}
+              style={{ borderBottom: "1px solid #ccc", margin: "10px 0" }}
+            >
+              <h1>{item.product.name}</h1>
+              <p>{item.product.description}</p>
+              <h2>₹{item.product.price}</h2>
 
-      <h2>Total: ₹{total}</h2>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <button
+                  onClick={() =>
+                    handleQuantity(item.product._id, "sub", item.quantity)
+                  }
+                >
+                  -
+                </button>
+                <p>Qty: {item.quantity}</p>
+                <button
+                  onClick={() =>
+                    handleQuantity(item.product._id, "add", item.quantity)
+                  }
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                onClick={() => handleRemove(item.product._id)}
+                style={{ marginTop: "10px", color: "red" }}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <hr />
+          <h2>Total: ₹{total}</h2>
+          <button onClick={() => alert("Proceeding to Checkout")}>
+            Checkout
+          </button>
+        </>
+      )}
     </div>
   );
 }
