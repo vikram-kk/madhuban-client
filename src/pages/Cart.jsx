@@ -61,6 +61,16 @@ export default function Cart() {
     }
   };
 
+  const handleCheckOut =()=>{
+      try {
+    const res = await API.post("/order/place");
+    alert("Order placed successfully 🎉");
+    navigate("/orders");
+  } catch (err) {
+    console.log(err);
+  }
+  }
+
   if (loading) return <h1>Loading...</h1>;
   if (err) return <h2>{err}</h2>;
 
