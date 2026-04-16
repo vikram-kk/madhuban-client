@@ -21,6 +21,7 @@ export default function Login() {
       type: "password",
       name: "password",
       placeholder: "••••••••",
+      // ui improvemnt
     },
   ];
 

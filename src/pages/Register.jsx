@@ -88,6 +88,7 @@ export default function SignUp() {
           opacity: 0.85, // Reduced opacity for that premium "watermark" look
         }}
       />
+      {/* ui improvemnt */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
