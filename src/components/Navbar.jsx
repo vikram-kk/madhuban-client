@@ -15,7 +15,7 @@ export default function Navbar() {
     "flex flex-col items-center gap-1 transition-colors hover:text-[#B22222] px-1";
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-[#FCF9F1] border-b border-[#1A1A1A] px-6 py-4 font-serif">
+    <nav className="sticky top-0 z-50 w-full bg-[#FCF9F1] border-b border-[#1A1A1A] px-6 py-4 font-serif block">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Logo Section */}
         <NavLink
