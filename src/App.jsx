@@ -9,7 +9,6 @@ import Navbar from "./components/Navbar";
 export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
@@ -18,15 +17,22 @@ export default function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <Home />
+              <>
+                <Navbar />
+                <Home />
+              </>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/cart"
           element={
             <ProtectedRoute>
-              <Cart />
+              <>
+                <Navbar />
+                <Cart />
+              </>
             </ProtectedRoute>
           }
         />
