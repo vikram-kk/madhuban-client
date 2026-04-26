@@ -28,10 +28,14 @@ export default function Home() {
     try {
       setAddingId(id);
       await API.post("/cart/add", { productId: id, quantity: 1 });
+      alert("Added to cart");
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to add to cart");
     } finally {
       setAddingId(null);
     }
   };
+
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center bg-[#FCF9F1]">
@@ -91,7 +95,11 @@ export default function Home() {
                 </span>
 
                 <button
-                  onClick={() => handleAddToCart(item._id)}
+                  className="px-3 py-1 border border-[#B22222] text-[#B22222] hover:bg-[#B22222] hover:text-white transition-all duration-300"
+                  onClick={(e) => {
+                    e.stopPropagation(); // 🔥 THIS IS IMPORTANT
+                    handleAddToCart(item._id);
+                  }}
                   disabled={addingId === item._id}
                 >
                   {addingId === item._id ? "Adding..." : "Add to Cart"}
