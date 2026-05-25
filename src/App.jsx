@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Cart from "./pages/Cart";
 import Navbar from "./components/Navbar";
+import ProductPage from "./pages/ProductPage";
 
 export default function App() {
   return (
@@ -32,6 +33,17 @@ export default function App() {
               <>
                 <Navbar />
                 <Cart />
+              </>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/product/:id"
+          element={
+            <ProtectedRoute>
+              <>
+                <Navbar />
+                <ProductPage />
               </>
             </ProtectedRoute>
           }
