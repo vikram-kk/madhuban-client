@@ -28,6 +28,18 @@ export default function App() {
         />
 
         <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <>
+                <Navbar />
+                <Cart />
+              </>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/orders"
           element={
             <ProtectedRoute>
