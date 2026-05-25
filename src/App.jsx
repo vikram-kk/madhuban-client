@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Cart from "./pages/Cart";
 import Navbar from "./components/Navbar";
 import ProductPage from "./pages/ProductPage";
+import Order from "./pages/Order";
 
 export default function App() {
   return (
@@ -27,12 +28,12 @@ export default function App() {
         />
 
         <Route
-          path="/cart"
+          path="/orders"
           element={
             <ProtectedRoute>
               <>
                 <Navbar />
-                <Cart />
+                <Order />
               </>
             </ProtectedRoute>
           }
