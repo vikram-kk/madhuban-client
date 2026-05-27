@@ -7,6 +7,7 @@ import Cart from "./pages/Cart";
 import Navbar from "./components/Navbar";
 import ProductPage from "./pages/ProductPage";
 import Order from "./pages/Order";
+import Wishlist from "./pages/Wishlist";
 
 export default function App() {
   return (
@@ -46,6 +47,17 @@ export default function App() {
               <>
                 <Navbar />
                 <Order />
+              </>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <>
+                <Navbar />
+                <Wishlist />
               </>
             </ProtectedRoute>
           }

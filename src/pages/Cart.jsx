@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import madpaintsec from "../assets/madhuban2-edited.png";
-import { motion, AnimatePresence } from "framer-motion"; // For premium smooth transitions
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
