@@ -10,6 +10,7 @@ import Order from "./pages/Order";
 import Wishlist from "./pages/Wishlist";
 import AdminDashboard from "./pages/AdminDashboard";
 import Account from "./pages/Account";
+import Address from "./pages/Address";
 
 export default function App() {
   return (
@@ -93,6 +94,17 @@ export default function App() {
               <>
                 <Navbar />
                 <ProductPage />
+              </>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/address"
+          element={
+            <ProtectedRoute>
+              <>
+                <Navbar />
+                <Address />
               </>
             </ProtectedRoute>
           }
