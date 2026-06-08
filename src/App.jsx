@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import ProductPage from "./pages/ProductPage";
 import Order from "./pages/Order";
 import Wishlist from "./pages/Wishlist";
+import AdminDashboard from "./pages/AdminDashboard";
 
 export default function App() {
   return (
@@ -58,6 +59,17 @@ export default function App() {
               <>
                 <Navbar />
                 <Wishlist />
+              </>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <>
+                <Navbar />
+                <AdminDashboard />
               </>
             </ProtectedRoute>
           }

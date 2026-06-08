@@ -61,7 +61,8 @@ export default function Cart() {
 
   const handleCheckOut = async () => {
     try {
-      await API.post("/order/place");
+      alert("hello vikram this is test alert for the order-place route");
+      const res = await API.post("/order/place");
       alert("Your masterpiece has been reserved! 🎉");
       navigate("/orders");
     } catch (err) {
