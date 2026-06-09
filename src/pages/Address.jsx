@@ -7,8 +7,10 @@ export default function Address() {
   const navigate = useNavigate();
   const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [locations, setLocations] = useState([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [change, setChange] = useState(false);
 
   // Structural subfields exactly mimicking your Order address payload parameters
   const [addressForm, setAddressForm] = useState({
@@ -21,6 +23,19 @@ export default function Address() {
     phone: "",
   });
 
+  // fetch all addresss
+  useEffect(() => {
+    const fetchAlladdresses = async () => {
+      try {
+        const res = await API.get("/address");
+        const userLocations = res.data?.locations;
+        if (userLocations.length !== 0) {
+          setLocations(userLocations);
+        }
+      } catch (error) {}
+    };
+    fetchAlladdresses();
+  }, [loading, locations, change]);
   // Fetch current address data context from backend profile on component mount
   useEffect(() => {
     const fetchCurrentAddress = async () => {
@@ -72,6 +87,19 @@ export default function Address() {
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  const setAsPrimary = async () => {
+    try {
+      setChange(true);
+      const res = await API.put("/auth/update");
+      const user = res.data?.user;
+      console.log(res.data);
+
+      setChange(false);
+    } catch (error) {
+      return;
     }
   };
 
@@ -191,6 +219,46 @@ export default function Address() {
                   Remove Address Coordinates
                 </button>
               </motion.div>
+            )}
+            {locations.length !== 0 ? (
+              <div className="border p-2">
+                {locations.map((location) => (
+                  <div>
+                    {/* <div className="flex justify-between items-start mb-4"></div> */}
+
+                    {/* Human-readable formatted fields output layout block */}
+                    <p className="text-lg font-bold text-[#1A1A1A] tracking-wide mb-1 uppercase">
+                      {location.street}
+                    </p>
+                    <p className="text-base text-[#444] italic mb-1">
+                      {location.city}, {location.state} — {location.pincode}
+                    </p>
+                    <p className="text-sm text-[#666] font-sans tracking-wide mb-1">
+                      {location.country}
+                    </p>
+                    <div className="flex justify-between">
+                      <p className="text-xs font-sans text-[#666] border-t border-[#EEEAE0] pt-3">
+                        <span className="font-serif italic text-gray-500 font-semibold mr-1">
+                          Contact Phone:
+                        </span>{" "}
+                        {location.phone}
+                      </p>
+                      <button
+                        onClick={setAsPrimary}
+                        className={
+                          change
+                            ? "text-xs text-white font-sans font-bold bg-[#691515] border-t border-[#EEEAE0] mt-2 p-1 rounded "
+                            : "text-xs text-white font-sans font-bold bg-[#B22222] border-t border-[#EEEAE0] mt-2 p-1 rounded hover:bg-[#ca2828]"
+                        }
+                      >
+                        {change ? "Saving...." : "Set as Primary"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              ""
             )}
           </div>
 
