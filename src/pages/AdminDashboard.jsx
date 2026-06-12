@@ -6,6 +6,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("products"); // tabs: 'products' | 'orders'
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [usersCount, setUsersCount] = useState(0); // Added for tracking total patrons
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -26,13 +27,20 @@ export default function AdminDashboard() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [productsRes, ordersRes] = await Promise.all([
+        // Added API.get("/user/all") dynamically alongside your previous responses
+        const [productsRes, ordersRes, usersRes] = await Promise.all([
           API.get("/product"),
-          API.get("/order/all"), // Assuming your admin-only route matches this
+          API.get("/order/all"),
+          API.get("/admin/users").catch(() => ({ data: { users: [] } })), // Graceful fallback if route isn't ready
         ]);
 
         setProducts(productsRes.data?.products || []);
         setOrders(ordersRes.data?.orders || []);
+
+        // Handle database user structures flexibly
+        const totalUsers =
+          usersRes.data?.users?.length || usersRes.data?.count || 0;
+        setUsersCount(totalUsers);
       } catch (err) {
         console.error(err);
         setError("Administration token missing or access denied.");
@@ -144,30 +152,54 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* --- DYNAMIC METRICS OVERVIEW STRIP --- */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+        {/* --- DYNAMIC METRICS OVERVIEW STRIP (NOW 4 BALANCE COLS) --- */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {/* Card 1: Revenue */}
           <div className="bg-white border-2 border-[#1A1A1A] p-6 shadow-sm">
             <span className="text-xs font-sans uppercase text-[#666] tracking-widest block mb-1">
-              Gross Ledger Sum
+              Total Revenue
             </span>
             <span className="text-3xl font-bold text-[#B22222]">
               ₹{totalRevenue.toLocaleString("en-IN")}
             </span>
           </div>
+
+          {/* Card 2: Total Products */}
           <div className="bg-white border-2 border-[#1A1A1A] p-6 shadow-sm">
             <span className="text-xs font-sans uppercase text-[#666] tracking-widest block mb-1">
-              Active Artifact Entries
+              Total Products
             </span>
             <span className="text-3xl font-bold text-[#1A1A1A]">
-              {products.length} Items
+              {products.length}{" "}
+              <span className="text-sm text-gray-500 font-normal font-sans">
+                Items
+              </span>
             </span>
           </div>
+
+          {/* Card 3: Total Orders */}
           <div className="bg-white border-2 border-[#1A1A1A] p-6 shadow-sm">
             <span className="text-xs font-sans uppercase text-[#666] tracking-widest block mb-1">
-              Procurement Requests
+              Total Orders
             </span>
             <span className="text-3xl font-bold text-emerald-800">
-              {orders.length} Invoices
+              {orders.length}{" "}
+              <span className="text-sm text-gray-500 font-normal font-sans">
+                Invoices
+              </span>
+            </span>
+          </div>
+
+          {/* Card 4: Total Users */}
+          <div className="bg-white border-2 border-[#1A1A1A] p-6 shadow-sm">
+            <span className="text-xs font-sans uppercase text-[#666] tracking-widest block mb-1">
+              Total Users
+            </span>
+            <span className="text-3xl font-bold text-indigo-900">
+              {usersCount}{" "}
+              <span className="text-sm text-gray-500 font-normal font-sans">
+                Patrons
+              </span>
             </span>
           </div>
         </div>
