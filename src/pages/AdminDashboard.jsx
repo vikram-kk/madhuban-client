@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
-import adminService from "../services/adminService"; // Import our new services layer
+import adminService from "../services/admin.service.js"; // Import our new services layer
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboard() {

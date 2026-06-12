@@ -15,13 +15,13 @@ const adminService = {
     // --- ORDER MANAGEMENT ---
     updateOrderStatus: async (orderId, updates) => {
         // updates payload: { orderStatus, paymentStatus }
-        const res = await API.put(`/admin/orders/${orderId}`, updates);
+        const res = await API.patch(`/order/${orderId}`, updates);
         return res.data?.order || res.data;
     },
 
     // --- PRODUCT MANAGEMENT ---
     updateProduct: async (productId, payload) => {
-        const res = await API.put(`/product/${productId}`, payload);
+        const res = await API.put(`/product/update/${productId}`, payload);
         return res.data?.product || res.data;
     }
 };
