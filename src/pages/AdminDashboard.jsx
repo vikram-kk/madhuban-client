@@ -23,7 +23,7 @@ export default function AdminDashboard() {
     stock: "",
     brand: "Madhuban",
     category: "",
-    imageUrl: "",
+    image: null,
   });
 
   const fetchDashboardData = async () => {
@@ -55,14 +55,19 @@ export default function AdminDashboard() {
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
-      const formattedPayload = {
-        ...newProduct,
-        price: Number(newProduct.price),
-        MRP: newProduct.MRP ? Number(newProduct.MRP) : undefined,
-        stock: Number(newProduct.stock),
-        images: newProduct.imageUrl ? [newProduct.imageUrl] : [],
-      };
-      const res = await API.post("/product/create", formattedPayload);
+      const formData = new FormData();
+
+      formData.append("name", newProduct.name);
+      formData.append("description", newProduct.description);
+      formData.append("price", Number(newProduct.price));
+      formData.append("MRP", Number(newProduct.MRP));
+      formData.append("stock", Number(newProduct.stock));
+      formData.append("category", newProduct.category);
+      formData.append("brand", newProduct.brand);
+
+      formData.append("image", newProduct.image);
+
+      const res = await API.post("/product/create", formData);
       alert("Product introduced to gallery registry!");
       setProducts((prev) => [res.data.product || res.data, ...prev]);
       setNewProduct({
@@ -73,7 +78,7 @@ export default function AdminDashboard() {
         stock: "",
         brand: "Madhuban",
         category: "",
-        imageUrl: "",
+        image: "",
       });
     } catch (err) {
       alert(err.response?.data?.message || "Failed to create catalog entry.");
@@ -89,8 +94,8 @@ export default function AdminDashboard() {
         price: Number(editingProduct.price),
         MRP: editingProduct.MRP ? Number(editingProduct.MRP) : undefined,
         stock: Number(editingProduct.stock),
-        images: editingProduct.imageUrl
-          ? [editingProduct.imageUrl]
+        images: editingProduct.image
+          ? [editingProduct.image]
           : editingProduct.images,
       });
       alert("Masterpiece specifications updated!");
@@ -368,11 +373,14 @@ export default function AdminDashboard() {
                     Asset Image Resource URL
                   </label>
                   <input
-                    type="url"
-                    placeholder="https://..."
-                    value={newProduct.imageUrl}
+                    type="file"
+                    accept="image/*"
+                    // value={newProduct.image}
                     onChange={(e) =>
-                      setNewProduct({ ...newProduct, imageUrl: e.target.value })
+                      setNewProduct({
+                        ...newProduct,
+                        image: e.target.files[0],
+                      })
                     }
                     className="w-full p-2 bg-[#FCF9F1] border border-[#1A1A1A] focus:outline-none text-xs"
                   />
@@ -431,7 +439,7 @@ export default function AdminDashboard() {
                         onClick={() =>
                           setEditingProduct({
                             ...p,
-                            imageUrl: p.images?.[0] || "",
+                            image: p.images?.[0] || "",
                           })
                         }
                         className="px-3 py-1.5 font-sans font-bold text-[10px] text-gray-700 border border-gray-300 uppercase hover:bg-gray-50 rounded transition-colors"
@@ -742,11 +750,11 @@ export default function AdminDashboard() {
                   </label>
                   <input
                     type="url"
-                    value={editingProduct.imageUrl || ""}
+                    value={editingProduct.image || ""}
                     onChange={(e) =>
                       setEditingProduct({
                         ...editingProduct,
-                        imageUrl: e.target.value,
+                        image: e.target.value,
                       })
                     }
                     className="w-full p-2 bg-[#FCF9F1] border border-[#1A1A1A] focus:outline-none text-xs"
