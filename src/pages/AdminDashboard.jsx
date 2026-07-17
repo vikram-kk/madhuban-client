@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
-import adminService from "../services/admin.service.js"; // Import our new services layer
+import adminService from "../services/admin.service.js";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("products"); // tabs: 'products' | 'orders' | 'users'
+  const [activeTab, setActiveTab] = useState("products");
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Editing modal local state holders
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Creation Form State
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
@@ -36,7 +34,6 @@ export default function AdminDashboard() {
       setProducts(productsRes.data?.products || []);
       setOrders(ordersRes.data?.orders || []);
 
-      // Fetch users using our clean administration service layer
       const usersData = await adminService.getAllUsers().catch(() => []);
       setUsers(usersData);
     } catch (err) {
@@ -51,12 +48,10 @@ export default function AdminDashboard() {
     fetchDashboardData();
   }, []);
 
-  // Handle creating a product
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
       const formData = new FormData();
-
       formData.append("name", newProduct.name);
       formData.append("description", newProduct.description);
       formData.append("price", Number(newProduct.price));
@@ -65,11 +60,17 @@ export default function AdminDashboard() {
       formData.append("category", newProduct.category);
       formData.append("brand", newProduct.brand);
 
-      formData.append("image", newProduct.image);
+      if (newProduct.image) {
+        formData.append("image", newProduct.image);
+      }
 
-      const res = await API.post("/product/create", formData);
+      const res = await API.post("/product/create", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       alert("Product introduced to gallery registry!");
       setProducts((prev) => [res.data.product || res.data, ...prev]);
+
       setNewProduct({
         name: "",
         description: "",
@@ -78,29 +79,50 @@ export default function AdminDashboard() {
         stock: "",
         brand: "Madhuban",
         category: "",
-        image: "",
+        image: null,
       });
+      e.target.reset();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to create catalog entry.");
     }
   };
 
-  // Handle updating an existing product's fields via modal submit
+  // UPDATED: Now compiles parameters into FormData for file updates
   const handleUpdateProductSubmit = async (e) => {
     e.preventDefault();
     try {
-      const updated = await adminService.updateProduct(editingProduct._id, {
-        ...editingProduct,
-        price: Number(editingProduct.price),
-        MRP: editingProduct.MRP ? Number(editingProduct.MRP) : undefined,
-        stock: Number(editingProduct.stock),
-        images: editingProduct.image
-          ? [editingProduct.image]
-          : editingProduct.images,
-      });
+      const formData = new FormData();
+      formData.append("name", editingProduct.name);
+      formData.append("description", editingProduct.description);
+      formData.append("price", Number(editingProduct.price));
+      if (editingProduct.MRP)
+        formData.append("MRP", Number(editingProduct.MRP));
+      formData.append("stock", Number(editingProduct.stock));
+      formData.append("category", editingProduct.category);
+      formData.append("brand", editingProduct.brand || "Madhuban");
+
+      // Check if a new file object was picked
+      if (editingProduct.imageFile) {
+        formData.append("image", editingProduct.imageFile);
+      }
+      // const updated = await adminService.updateProduct(
+      //   editingProduct._id,
+      //   formData,
+      // );
+
+      const res = await API.put(
+        `/product/update/${editingProduct._id}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+
+      const updatedData = res.data.product || res.data;
       alert("Masterpiece specifications updated!");
+
       setProducts((prev) =>
-        prev.map((p) => (p._id === editingProduct._id ? updated : p)),
+        prev.map((p) => (p._id === editingProduct._id ? updatedData : p)),
       );
       setEditingProduct(null);
     } catch (err) {
@@ -108,7 +130,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Handle product deletion
   const handleDeleteProduct = async (id) => {
     if (
       !window.confirm(
@@ -124,7 +145,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Handle moving status steps for a placement order invoice dynamically
   const handleStatusChange = async (orderId, targetField, targetValue) => {
     try {
       const updatedOrder = await adminService.updateOrderStatus(orderId, {
@@ -138,7 +158,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Handle database user removal
   const handleDeleteUser = async (userId) => {
     if (
       !window.confirm(
@@ -188,7 +207,6 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          {/* Action Tabs Switching Control buttons */}
           <div className="flex flex-wrap gap-2 font-sans text-xs uppercase tracking-widest font-bold">
             <button
               onClick={() => setActiveTab("products")}
@@ -265,7 +283,6 @@ export default function AdminDashboard() {
         {/* ================= PRODUCTS TAB VIEW CONTAINER ================= */}
         {activeTab === "products" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-            {/* Input Form Box Container */}
             <div className="bg-white border-2 border-[#1A1A1A] p-6 sticky top-6 shadow-sm">
               <h2 className="text-xl font-bold uppercase tracking-wide border-b border-[#EEEAE0] pb-3 mb-4">
                 Register New Piece
@@ -370,12 +387,11 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-[#666] mb-1 font-serif">
-                    Asset Image Resource URL
+                    Asset Image File
                   </label>
                   <input
                     type="file"
                     accept="image/*"
-                    // value={newProduct.image}
                     onChange={(e) =>
                       setNewProduct({
                         ...newProduct,
@@ -394,7 +410,6 @@ export default function AdminDashboard() {
               </form>
             </div>
 
-            {/* Catalog List display block section */}
             <div className="lg:col-span-2 space-y-4">
               <h2 className="text-xl font-bold uppercase tracking-wide mb-4 border-b-2 border-[#1A1A1A] pb-2">
                 Active Gallery Collections
@@ -439,7 +454,7 @@ export default function AdminDashboard() {
                         onClick={() =>
                           setEditingProduct({
                             ...p,
-                            image: p.images?.[0] || "",
+                            imageFile: null, // Clear past temporary modifications explicitly
                           })
                         }
                         className="px-3 py-1.5 font-sans font-bold text-[10px] text-gray-700 border border-gray-300 uppercase hover:bg-gray-50 rounded transition-colors"
@@ -510,7 +525,6 @@ export default function AdminDashboard() {
                             </span>
                           </div>
 
-                          {/* Live interactive drop selector modifier for structural Payment State tracking */}
                           <select
                             value={o.paymentStatus || "pending"}
                             onChange={(e) =>
@@ -534,7 +548,6 @@ export default function AdminDashboard() {
                             {o.orderStatus || "processing"}
                           </span>
 
-                          {/* Live interactive selector modifier for structural Delivery Tracking state steps */}
                           <select
                             value={o.orderStatus || "processing"}
                             onChange={(e) =>
@@ -744,21 +757,28 @@ export default function AdminDashboard() {
                     />
                   </div>
                 </div>
+
+                {/* UPDATED: File selection block layout inside edit flow */}
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-[#666] mb-1 font-serif">
-                    Asset Image Link URL
+                    Update Image File
                   </label>
                   <input
-                    type="url"
-                    value={editingProduct.image || ""}
+                    type="file"
+                    accept="image/*"
                     onChange={(e) =>
                       setEditingProduct({
                         ...editingProduct,
-                        image: e.target.value,
+                        imageFile: e.target.files[0],
                       })
                     }
                     className="w-full p-2 bg-[#FCF9F1] border border-[#1A1A1A] focus:outline-none text-xs"
                   />
+                  {editingProduct.images?.[0] && !editingProduct.imageFile && (
+                    <p className="text-[11px] font-sans text-gray-500 mt-1 italic">
+                      Current: {editingProduct.images[0].split("/").pop()}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex gap-2 pt-2">
